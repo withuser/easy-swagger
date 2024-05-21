@@ -1,0 +1,7 @@
+src
+dist-cjs
+.editorconfig
+.gitignore
+.package-lock.json
+README.md
+tsconfig.json
