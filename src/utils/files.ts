@@ -1,5 +1,6 @@
-import fs from 'node:fs';
+import fs, { promises } from 'node:fs';
 import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { EndPointInfo, FolderSchema, ListFolderOptions } from '../@types/types';
 
 /**
@@ -61,35 +62,35 @@ export function listAllFiles(
 
 /**
  * Retrieves schemas from the specified folder.
- * 
+ *
  * @param {string} folder - The folder to read schemas from.
  * @returns {FolderSchema} An object representing the folder schema.
- * 
+ *
  * @throws Will throw an error if the endpoint information file is not found.
- * 
+ *
  */
 export function getSchemasFromFolders(folder: string): FolderSchema {
   const { files, folders } = listAllFiles(folder, { recursive: true });
-  const serviceName = folder.split('').pop()?.replaceAll("-", "_");
+  const serviceName = folder.split('').pop()?.replaceAll('-', '_');
   const resSchemaName = `${serviceName}_REQUEST`.toUpperCase();
 
   const responseSchemas = folders.map((folder, index) => {
-    const status = folder.split("/").pop() || '200';
+    const status = folder.split('/').pop() || '200';
     const schemaName = `${serviceName}_${status}`.toUpperCase();
 
     return {
       name: schemaName,
       json: readJSONFile(files[index]),
       response: {
-        content: "application/json",
+        content: 'application/json',
         status: parseInt(status),
         schema: schemaName,
       },
     };
   });
 
-  const jsonReq = readJSONFile(folder + "/request.json");
-  const reqInfo = readJSONFile<EndPointInfo>(folder + "/info.json");
+  const jsonReq = readJSONFile(folder + '/request.json');
+  const reqInfo = readJSONFile<EndPointInfo>(folder + '/info.json');
 
   if (!reqInfo) throw Error(`Endpoint without info file in ${folder}`);
 
@@ -100,7 +101,7 @@ export function getSchemasFromFolders(folder: string): FolderSchema {
           ...responseSchemas,
           {
             name: resSchemaName,
-            json: readJSONFile(folder + "/request.json"),
+            json: readJSONFile(folder + '/request.json'),
             response: null,
           },
         ],
@@ -110,4 +111,35 @@ export function getSchemasFromFolders(folder: string): FolderSchema {
       schema: resSchemaName,
     },
   };
+}
+
+/**
+ * Saves the provided content to a JSON file at a specified path.
+ * If the necessary directories do not exist, they will be created.
+ *
+ * @param {string} filename - The name of the file to save.
+ * @param {string} content - The content to write to the file.
+ * @returns {Promise<boolean>} - A promise that resolves to `true` if the file was saved successfully, or `false` if an error occurred.
+ *
+ */
+export async function saveDocs(
+  filename: string,
+  content: string
+): Promise<boolean> {
+  try {
+    const __filename = fileURLToPath(import.meta.url);
+    const __dirname = path.dirname(__filename);
+    const dirPath = path.join(__dirname, 'out/data/content');
+    const filePath = path.join(dirPath, filename);
+    const dirname = path.dirname(filePath);
+
+    if (!fs.existsSync(dirname)) {
+      fs.mkdirSync(dirname, { recursive: true });
+    }
+
+    await promises.writeFile(filePath, content, 'utf8');
+    return true;
+  } catch (error) {
+    return false;
+  }
 }

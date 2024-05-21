@@ -1,46 +1,49 @@
-import fs from "node:fs";
-import { getSchemasFromFolders, listAllFiles, readJSONFile } from "./utils/files.js";
+#! /usr/bin/env node
+import {
+  getSchemasFromFolders,
+  listAllFiles,
+  readJSONFile,
+  saveDocs,
+} from './utils/files.js';
 import {
   createSwaggerDefinitions,
   createSwaggerDocApi,
-} from "./utils/open-api.js";
-import { Format, OpenApiObject } from "./@types/types";
+} from './utils/open-api.js';
+import { Format, OpenApiObject } from './@types/types';
 
 export default async function main(args: string[]) {
   const rootDir = args[0]?.split('=')[1];
 
-  if (!args.length || !rootDir) throw Error("Invalid params, set root dir");
+  if (!args.length || !rootDir) throw Error('Invalid params, set root dir');
 
   const { folders, files } = listAllFiles(rootDir, { recursive: true });
 
-  if (!folders.length) throw Error("Not found projects");
+  if (!folders.length) throw Error('Not found projects');
 
-  const formats = files.filter((e) => e.endsWith("/format.json"));
+  const formats = files.filter((e) => e.endsWith('/format.json'));
 
-  if (!formats.length) throw Error("Project without format file");
+  if (!formats.length) throw Error('Project without format file');
 
   const openAPi: OpenApiObject = {};
-  const dirProjects = formats.map((e) => e.substring(0, e.lastIndexOf("/")));
+  const dirProjects = formats.map((e) => e.substring(0, e.lastIndexOf('/')));
   dirProjects.forEach((dir) => {
     const { files } = listAllFiles(dir, { recursive: true });
-    const infoFiles = files.filter((e) => e.endsWith("info.json"));
+    const infoFiles = files.filter((e) => e.endsWith('info.json'));
 
-    if (!infoFiles.length) throw Error("Not found info files");
+    if (!infoFiles.length) throw Error('Not found info files');
 
-    const slashCount = [...new Set(infoFiles.map((e) => e.split("/").length))];
+    const slashCount = [...new Set(infoFiles.map((e) => e.split('/').length))];
 
-    if (slashCount.length > 1 || slashCount[0] > 7 || slashCount[0] < 6) {
-      throw Error("Inconsistent folder structure");
-    }
+    if (slashCount.length > 1) throw Error('Inconsistent folder structure');
 
-    const apiInfo = readJSONFile<Format>(dir + "/format.json");
+    const apiInfo = readJSONFile<Format>(dir + '/format.json');
 
     if (!apiInfo) throw Error(`Not found format documento in ${dir}`);
 
-    openAPi[apiInfo.title + "_" + apiInfo.version] = {
+    openAPi[apiInfo.title + '_' + apiInfo.version] = {
       info: apiInfo,
       schemas: infoFiles
-        .map((e) => e.substring(0, e.lastIndexOf("/")))
+        .map((e) => e.substring(0, e.lastIndexOf('/')))
         .map(getSchemasFromFolders),
     };
   });
@@ -66,11 +69,14 @@ export default async function main(args: string[]) {
       apis.push(createSwaggerDocApi(path, docs));
     }
 
-    fs.writeFileSync(
-      `output/${api.info.title.replaceAll(" ", "-")}.yml`,
-      doc.replace("{}", `\ ${apis.join("\r\n")}`),
-      "utf8"
+    const isSave = await saveDocs(
+      `${api.info.title.replaceAll(' ', '-')}.yml`,
+      doc.replace('{}', `\ ${apis.join('\r\n')}`)
     );
+
+    if (!isSave) {
+      throw Error(`Error when creating yml file of ${api.info.title}`);
+    }
   }
 }
 
