@@ -1,6 +1,5 @@
 import fs, { promises } from 'node:fs';
 import path from 'node:path';
-import { fileURLToPath } from 'node:url';
 import { EndPointInfo, FolderSchema, ListFolderOptions } from '../@types/types';
 
 /**
@@ -123,14 +122,10 @@ export function getSchemasFromFolders(folder: string): FolderSchema {
  *
  */
 export async function saveDocs(
-  filename: string,
+  filePath: string,
   content: string
 ): Promise<boolean> {
   try {
-    const __filename = fileURLToPath(import.meta.url);
-    const __dirname = path.dirname(__filename);
-    const dirPath = path.join(__dirname, 'out');
-    const filePath = path.join(dirPath, filename);
     const dirname = path.dirname(filePath);
 
     if (!fs.existsSync(dirname)) {

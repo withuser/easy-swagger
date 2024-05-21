@@ -70,7 +70,7 @@ export default async function main(args: string[]) {
     }
 
     const isSave = await saveDocs(
-      `${api.info.title.replaceAll(' ', '-')}.yml`,
+      `${rootDir}/out/yml/${api.info.title.replaceAll(' ', '-')}.yml`,
       doc.replace('{}', `\ ${apis.join('\r\n')}`)
     );
 
