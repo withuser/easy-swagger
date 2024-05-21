@@ -129,7 +129,7 @@ export async function saveDocs(
   try {
     const __filename = fileURLToPath(import.meta.url);
     const __dirname = path.dirname(__filename);
-    const dirPath = path.join(__dirname, 'out/data/content');
+    const dirPath = path.join(__dirname, 'out');
     const filePath = path.join(dirPath, filename);
     const dirname = path.dirname(filePath);
 
