@@ -1,0 +1,18 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import Swagger from '../../components/Swagger';
+
+export async function getStaticPaths() {
+  return [
+    { params: { project: "RGM-API", version: "V1.0.0" } },
+    { params: { project: "RGM-API", version: "V2.0.0" } },
+    { params: { project: "SAMPLE-API", version: "alpha" } },
+    { params: { project: "SAMPLE-API", version: 'betta' } },
+  ];
+}
+const props = Astro.params;
+---
+
+<BaseLayout>
+  <Swagger {...props} client:only="react" />
+</BaseLayout>

@@ -1,0 +1,46 @@
+{
+  "name": "easy-swagger",
+  "version": "0.0.1",
+  "description": "This package allows you to create your swagger documentation in a simple and easy way.",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "swagger:build": "node ./src/index.js",
+    "ui:dev": "astro dev --root ./src/ui --config ./astro.config.mjs",
+    "ui:check": "astro check --root ./src/ui --config ./astro.config.mjs",
+    "ui:build": "npm run ui:check && astro build --root ./src/ui --config ./astro.config.mjs"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/withuser/easy-swagger.git"
+  },
+  "keywords": [
+    "swagger",
+    "swagger-ui",
+    "swagger-astro"
+  ],
+  "author": "withuser",
+  "license": "CC-BY-NC-4.0",
+  "homepage": "https://github.com/withuser/easy-swagger#readme",
+  "dependencies": {
+    "@astrojs/react": "^3.3.4",
+    "@astrojs/tailwind": "^5.1.0",
+    "astro": "^4.8.6",
+    "generate-schema": "^2.6.0",
+    "http-status-ts": "^2.0.1",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "swagger-ui": "^5.17.10",
+    "swagger-ui-react": "^5.17.10",
+    "typeconv": "^2.3.1"
+  },
+  "devDependencies": {
+    "@astrojs/check": "^0.7.0",
+    "@types/node": "^20.12.12",
+    "@types/react": "^18.3.2",
+    "@types/react-dom": "^18.3.0",
+    "@types/swagger-ui-react": "^4.18.3",
+    "tailwindcss": "^3.4.3",
+    "typescript": "^5.4.5"
+  }
+}
