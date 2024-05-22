@@ -69,7 +69,7 @@ export default async function main(args: string[]) {
       apis.push(createSwaggerDocApi(path, docs));
     }
 
-    const filename = `${api.info.title.replaceAll(' ', '-')}}.yml`;
+    const filename = `${api.info.title.replaceAll(' ', '-')}.yml`;
     const ymlContent = doc.replace('{}', `\ ${apis.join('\r\n')}`);
     const isSave = await Promise.all([
       saveDocs(`${rootDir}/out/yml/${filename}`, ymlContent),
