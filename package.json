@@ -1,18 +1,19 @@
 {
   "name": "easy-swagger",
-  "version": "0.0.4",
+  "version": "0.0.8",
   "description": "This package allows you to create your swagger documentation in a simple and easy way.",
   "main": ".dist/index.js",
   "type": "module",
   "scripts": {
     "swagger:build": "npx tsc",
+    "swagger:publish": "npx tsc && npm publish",
     "ui:dev": "astro dev --root ./src/ui --config ./astro.config.mjs",
     "ui:check": "astro check --root ./src/ui --config ./astro.config.mjs",
     "ui:build": "npm run ui:check && astro build --root ./src/ui --config ./astro.config.mjs"
   },
   "bin": {
     "easy-swagger": "dist/index.js"
-  },  
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/withuser/easy-swagger.git"
@@ -26,6 +27,7 @@
   "license": "CC-BY-NC-4.0",
   "homepage": "https://github.com/withuser/easy-swagger#readme",
   "dependencies": {
+    "@astrojs/node": "^8.2.5",
     "@astrojs/react": "^3.3.4",
     "@astrojs/tailwind": "^5.1.0",
     "astro": "^4.8.6",
