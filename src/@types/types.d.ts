@@ -5,6 +5,7 @@ export interface ListFolderOptions {
 }
 
 export interface Format {
+  description: string;
   title: string;
   version: string;
   servers: Array<{
