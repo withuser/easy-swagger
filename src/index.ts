@@ -69,15 +69,29 @@ export default async function main(args: string[]) {
       apis.push(createSwaggerDocApi(path, docs));
     }
 
-    const isSave = await saveDocs(
-      `${rootDir}/out/yml/${api.info.title.replaceAll(' ', '-')}.yml`,
-      doc.replace('{}', `\ ${apis.join('\r\n')}`)
-    );
+    const filename = `${api.info.title.replaceAll(' ', '-')}}.yml`;
+    const ymlContent = doc.replace('{}', `\ ${apis.join('\r\n')}`);
+    const isSave = await Promise.all([
+      saveDocs(`${rootDir}/out/yml/${filename}`, ymlContent),
+      saveDocs(`./ui/public/docs/yml/${filename}`, ymlContent),
+    ]);
 
-    if (!isSave) {
+    if (isSave.includes(false)) {
       throw Error(`Error when creating yml file of ${api.info.title}`);
     }
   }
+
+  // save json ui
+  await saveDocs(
+    './ui/src/data/open-api.json',
+    JSON.stringify(
+      Object.values(openAPi).map((api) => ({
+        description: api.info.description,
+        path: `${api.info.title.replaceAll(' ', '-')}/${api.info.version}`,
+        title: api.info.title,
+      }))
+    )
+  );
 }
 
 main(process.argv.slice(2));
