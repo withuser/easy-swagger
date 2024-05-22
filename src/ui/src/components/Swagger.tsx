@@ -10,7 +10,7 @@ const SwaggerUIComponent = ({ project, version }: Props) => {
   return (
     <div style={{ height: "100vh" }}>
       <SwaggerUI
-        url={`/output/${project}-${version}.yml`}
+        url={`/docs/yml/${project}-${version}.yml`}
         docExpansion="none"
         defaultModelsExpandDepth={-1}
         defaultModelExpandDepth={2}
