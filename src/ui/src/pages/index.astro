@@ -1,7 +1,9 @@
 ---
 import BaseLayout from '@/layouts/BaseLayout.astro';
 import CardProject from '@/components/CardProject.astro';
-import projects from '@/data/open-api.json';
+
+const res = await import('../../public/docs/json/open-api.json');
+const projects = res.default;
 ---
 
 <BaseLayout>

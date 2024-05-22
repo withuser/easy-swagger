@@ -1,16 +1,11 @@
 ---
 import BaseLayout from '@/layouts/BaseLayout.astro';
-import projects from '@/data/open-api.json';
 import Swagger from '@/components/Swagger';
 
-export async function getStaticPaths() {
-  return projects.map(({ title, version }) => ({
-    params: { project: title, version },
-  }));
-}
-const props = Astro.params;
+const { project, version } = Astro.params;
+if (!project || !version) return Astro.redirect('/');
 ---
 
 <BaseLayout>
-  <Swagger {...props} client:only="react" />
+  <Swagger project={project} version={version} client:load />
 </BaseLayout>
