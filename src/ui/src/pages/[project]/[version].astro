@@ -1,14 +1,12 @@
 ---
-import BaseLayout from "../../layouts/BaseLayout.astro";
-import Swagger from '../../components/Swagger';
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import projects from '@/data/open-api.json';
+import Swagger from '@/components/Swagger';
 
 export async function getStaticPaths() {
-  return [
-    { params: { project: "RGM-API", version: "V1.0.0" } },
-    { params: { project: "RGM-API", version: "V2.0.0" } },
-    { params: { project: "SAMPLE-API", version: "alpha" } },
-    { params: { project: "SAMPLE-API", version: 'betta' } },
-  ];
+  return projects.map(({ title, version }) => ({
+    params: { project: title, version },
+  }));
 }
 const props = Astro.params;
 ---
