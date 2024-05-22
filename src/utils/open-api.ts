@@ -6,7 +6,7 @@ import { EndPointInfoDoc, RequestSchema, ResponseData } from 'src/@types/types';
 export const toJsonSchema = (name: string, json: any) => {
   if (!json) return null;
   if (json['$schema']) return json;
-  return generateSchema.json(name, [json]);
+  return generateSchema.json(name, json);
 };
 
 export const createSwaggerDefinitions = async (
