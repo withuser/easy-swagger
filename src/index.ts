@@ -69,11 +69,12 @@ export default async function main(args: string[]) {
       apis.push(createSwaggerDocApi(path, docs));
     }
 
-    const filename = `${api.info.title.replaceAll(' ', '-')}.yml`;
+    const fileId = api.info.title + '-' + api.info.version;
+    const filename = `${fileId.replaceAll(' ', '-')}.yml`;
     const ymlContent = doc.replace('{}', `\ ${apis.join('\r\n')}`);
     const isSave = await Promise.all([
-      saveDocs(`${rootDir}/out/yml/${filename}`, ymlContent),
-      saveDocs(`./ui/public/docs/yml/${filename}`, ymlContent),
+      saveDocs(`./out/${filename}`, ymlContent),
+      saveDocs(`./ui/client/docs/yml/${filename}`, ymlContent, true),
     ]);
 
     if (isSave.includes(false)) {
@@ -83,14 +84,15 @@ export default async function main(args: string[]) {
 
   // save json ui
   await saveDocs(
-    './ui/src/data/open-api.json',
+    './ui/client/docs/json/open-api.json',
     JSON.stringify(
       Object.values(openAPi).map((api) => ({
         description: api.info.description,
         path: `${api.info.title.replaceAll(' ', '-')}/${api.info.version}`,
         title: api.info.title,
       }))
-    )
+    ),
+    true
   );
 }
 

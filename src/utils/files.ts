@@ -1,6 +1,7 @@
 import fs, { promises } from 'node:fs';
 import path from 'node:path';
 import { EndPointInfo, FolderSchema, ListFolderOptions } from '../@types/types';
+import { fileURLToPath } from 'node:url';
 
 /**
  * Reads a JSON file and parses it into a JavaScript object.
@@ -116,25 +117,39 @@ export function getSchemasFromFolders(folder: string): FolderSchema {
  * Saves the provided content to a JSON file at a specified path.
  * If the necessary directories do not exist, they will be created.
  *
- * @param {string} filename - The name of the file to save.
+ * @param {string} filePath - The name of the file to save.
  * @param {string} content - The content to write to the file.
+ * @param {boolean} internal - The content to write to the file.
  * @returns {Promise<boolean>} - A promise that resolves to `true` if the file was saved successfully, or `false` if an error occurred.
  *
  */
 export async function saveDocs(
   filePath: string,
-  content: string
+  content: string,
+  internal: boolean = false
 ): Promise<boolean> {
   try {
-    const dirname = path.dirname(filePath);
+    const dir = internal ? getInternalPath(filePath) : filePath;
+    const dirname = path.dirname(dir);
 
     if (!fs.existsSync(dirname)) {
       fs.mkdirSync(dirname, { recursive: true });
     }
 
-    await promises.writeFile(filePath, content, 'utf8');
+    await promises.writeFile(dir, content, 'utf8');
     return true;
   } catch (error) {
     return false;
   }
 }
+
+/**
+ * Gets the internal path relative to the current file location.
+ *
+ * @param {string} dirFile - The relative path to be joined.
+ * @returns {string} The resulting absolute path.
+ */
+export const getInternalPath = (dirFile: string): string => {
+  const __dirname = path.dirname(fileURLToPath(import.meta.url));
+  return path.join(__dirname, '..', dirFile);
+};
