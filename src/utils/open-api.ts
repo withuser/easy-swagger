@@ -84,10 +84,10 @@ export const createSwaggerDocApi = (
 };
 
 export const requiredBody = (req: RequestFile): boolean => {
-  return Boolean(
-    !req.body ||
-      !Object.keys(req.body).length ||
-      req.method.toUpperCase() === 'GET' ||
-      req.method.toUpperCase() === 'DELETE'
-  );
+  const method = req.method.toUpperCase();
+  if (method === 'GET' || method === 'DELETE') {
+    return false;
+  }
+
+  return !req.body || !Object.keys(req.body).length;
 };
