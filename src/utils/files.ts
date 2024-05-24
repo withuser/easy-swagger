@@ -1,6 +1,6 @@
 import fs, { promises } from 'node:fs';
 import path from 'node:path';
-import { EndPointInfo, FolderSchema, ListFolderOptions } from '../@types/types';
+import { FolderSchema, ListFolderOptions, RequestFile } from '../@types/types';
 import { fileURLToPath } from 'node:url';
 
 /**
@@ -64,7 +64,7 @@ export function listAllFiles(
  * Retrieves schemas from the specified folder.
  *
  * @param {string} folder - The folder to read schemas from.
- * @returns {FolderSchema} An object representing the folder schema.
+ * @returns {FolderSchema<RequestFile>} An object representing the folder schema.
  *
  * @throws Will throw an error if the endpoint information file is not found.
  *
@@ -72,7 +72,7 @@ export function listAllFiles(
 export function getSchemasFromFolders(folder: string): FolderSchema {
   const { files, folders } = listAllFiles(folder, { recursive: true });
   const serviceName = folder.split('').pop()?.replaceAll('-', '_');
-  const resSchemaName = `${serviceName}_REQUEST`.toUpperCase();
+  const reqSchemaName = `${crypto.randomUUID()}_REQUEST`.toUpperCase();
 
   const responseSchemas = folders.map((folder, index) => {
     const status = folder.split('/').pop() || '200';
@@ -80,7 +80,7 @@ export function getSchemasFromFolders(folder: string): FolderSchema {
 
     return {
       name: schemaName,
-      json: readJSONFile(files[index]),
+      body: readJSONFile(files[index]),
       response: {
         content: 'application/json',
         status: parseInt(status),
@@ -89,27 +89,14 @@ export function getSchemasFromFolders(folder: string): FolderSchema {
     };
   });
 
-  const jsonReq = readJSONFile(folder + '/request.json');
-  const reqInfo = readJSONFile<EndPointInfo>(folder + '/info.json');
+  const jsonReq = readJSONFile<RequestFile>(folder + '/request.json');
 
-  if (!reqInfo) throw Error(`Endpoint without info file in ${folder}`);
+  if (!jsonReq) throw Error(`Endpoint without info file in ${folder}`);
 
   return {
-    schemas: !jsonReq
-      ? responseSchemas
-      : [
-          ...responseSchemas,
-          {
-            name: resSchemaName,
-            json: readJSONFile(folder + '/request.json'),
-            response: null,
-          },
-        ],
-    request: {
-      ...reqInfo,
-      requestBody: Boolean(jsonReq),
-      schema: resSchemaName,
-    },
+    schemas: responseSchemas,
+    request: jsonReq,
+    requestSchemaName: reqSchemaName,
   };
 }
 

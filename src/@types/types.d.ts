@@ -4,7 +4,7 @@ export interface ListFolderOptions {
   recursive: boolean;
 }
 
-export interface Format {
+export interface APIInfo {
   description: string;
   title: string;
   version: string;
@@ -14,20 +14,6 @@ export interface Format {
   }>;
 }
 
-export interface EndPointInfo {
-  content: string;
-  method: string;
-  summary: string;
-  path: string;
-  tag: string;
-}
-
-export interface EndPointInfoDoc extends EndPointInfo {
-  requestBody: boolean;
-  schema: string;
-}
-
-
 export interface ResponseData {
   content: string;
   status: number;
@@ -36,18 +22,38 @@ export interface ResponseData {
 
 export interface RequestSchema {
   name: string;
-  json: any;
-  response: ResponseData | null;
+  body: { [key: string]: any };
+  response: ResponseData;
 }
 
 export interface FolderSchema {
   schemas: Array<RequestSchema>;
-  request: EndPointInfoDoc;
+  request: RequestFile;
+  requestSchemaName: string;
 }
 
 export interface OpenApiObject {
   [key: string]: {
-    info: Format;
+    info: APIInfo;
     schemas: FolderSchema[];
   };
+}
+
+export interface RequestFile {
+  body: { [key: string]: any };
+  form: { [key: string]: any };
+  headers: { [key: string]: any };
+  queries: { [key: string]: any };
+  params: { [key: string]: any };
+  contentType: string;
+  description: string;
+  method: string;
+  path: string;
+  tag: string;
+}
+
+export interface CreateSwaggerParams {
+  request: RequestFile;
+  requestSchemaName: string;
+  responses: ResponseData[];
 }

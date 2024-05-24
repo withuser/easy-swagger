@@ -9,7 +9,7 @@ import {
   createSwaggerDefinitions,
   createSwaggerDocApi,
 } from './utils/open-api.js';
-import { Format, OpenApiObject } from './@types/types';
+import { APIInfo, CreateSwaggerParams, OpenApiObject } from './@types/types';
 
 export default async function main(args: string[]) {
   const rootDir = args[0]?.split('=')[1];
@@ -20,48 +20,47 @@ export default async function main(args: string[]) {
 
   if (!folders.length) throw Error('Not found projects');
 
-  const formats = files.filter((e) => e.endsWith('/format.json'));
+  const formats = files.filter((e) => e.endsWith('/api.json'));
 
-  if (!formats.length) throw Error('Project without format file');
+  if (!formats.length) throw Error('Project without API file');
 
   const openAPi: OpenApiObject = {};
   const dirProjects = formats.map((e) => e.substring(0, e.lastIndexOf('/')));
   dirProjects.forEach((dir) => {
     const { files } = listAllFiles(dir, { recursive: true });
-    const infoFiles = files.filter((e) => e.endsWith('info.json'));
+    const requestFiles = files.filter((e) => e.endsWith('request.json'));
 
-    if (!infoFiles.length) throw Error('Not found info files');
+    if (!requestFiles.length) throw Error('Not found info files');
 
-    const slashCount = [...new Set(infoFiles.map((e) => e.split('/').length))];
+    const slashCount = [
+      ...new Set(requestFiles.map((e) => e.split('/').length)),
+    ];
 
     if (slashCount.length > 1) throw Error('Inconsistent folder structure');
 
-    const apiInfo = readJSONFile<Format>(dir + '/format.json');
+    const apiInfo = readJSONFile<APIInfo>(dir + '/api.json');
 
-    if (!apiInfo) throw Error(`Not found format documento in ${dir}`);
+    if (!apiInfo) throw Error(`Not found API documento in ${dir}`);
 
     openAPi[apiInfo.title + '_' + apiInfo.version] = {
       info: apiInfo,
-      schemas: infoFiles
+      schemas: requestFiles
         .map((e) => e.substring(0, e.lastIndexOf('/')))
         .map(getSchemasFromFolders),
     };
   });
 
   for (const api of Object.values(openAPi)) {
-    const doc = await createSwaggerDefinitions(
-      api.info.title,
-      api.info.version,
-      api.schemas.map((e) => e.schemas).flat()
-    );
-
     const apis = [];
-    const mapSchema = new Map();
+    const mapSchema = new Map<string, CreateSwaggerParams[]>();
 
     api.schemas.forEach((schema) => {
       const data = mapSchema.get(schema.request.path);
-      const responses = schema.schemas.map((e) => e.response).filter((e) => e);
-      const newData = { request: schema.request, responses };
+      const newData: CreateSwaggerParams = {
+        request: schema.request,
+        requestSchemaName: schema.requestSchemaName,
+        responses: schema.schemas.map((e) => e.response),
+      };
       mapSchema.set(schema.request.path, data ? [...data, newData] : [newData]);
     });
 
@@ -71,6 +70,16 @@ export default async function main(args: string[]) {
 
     const fileId = api.info.title + '-' + api.info.version;
     const filename = `${fileId.replaceAll(' ', '-')}.yml`;
+    const doc = await createSwaggerDefinitions(
+      api.info.title,
+      api.info.version,
+      api.schemas
+        .map(({ schemas, request, requestSchemaName: name }) => [
+          ...schemas,
+          { name, body: request.body },
+        ])
+        .flat()
+    );
     const ymlContent = doc.replace('{}', `\ ${apis.join('\r\n')}`);
     const isSave = await Promise.all([
       saveDocs(`./out/${filename}`, ymlContent),

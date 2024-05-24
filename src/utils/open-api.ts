@@ -1,7 +1,11 @@
 import generateSchema from 'generate-schema';
 import { getJsonSchemaReader, getOpenApiWriter, makeConverter } from 'typeconv';
 import { httpStatusTextByCode } from 'http-status-ts';
-import { EndPointInfoDoc, RequestSchema, ResponseData } from 'src/@types/types';
+import {
+  CreateSwaggerParams,
+  RequestFile,
+  RequestSchema,
+} from 'src/@types/types';
 
 export const toJsonSchema = (name: string, json: any) => {
   if (!json) return null;
@@ -12,7 +16,7 @@ export const toJsonSchema = (name: string, json: any) => {
 export const createSwaggerDefinitions = async (
   title: string,
   version: string,
-  schemas: RequestSchema[] = []
+  schemas: Omit<RequestSchema, 'response'>[] = []
 ): Promise<string> => {
   const reader = getJsonSchemaReader();
   const writer = getOpenApiWriter({
@@ -23,9 +27,9 @@ export const createSwaggerDefinitions = async (
   });
   const { convert } = makeConverter(reader, writer) as any;
   const definitions: { [key: string]: any } = {};
-  schemas.forEach(({ name, json }) => {
-    const schema = toJsonSchema(name, json);
-    if (schema) definitions[name] = toJsonSchema(name, json);
+  schemas.forEach(({ name, body }) => {
+    const schema = toJsonSchema(name, body);
+    if (schema) definitions[name] = toJsonSchema(name, body);
   });
 
   const { data } = await convert({ data: { definitions } });
@@ -34,7 +38,7 @@ export const createSwaggerDefinitions = async (
 
 export const createSwaggerDocApi = (
   path: string,
-  docs: { request: EndPointInfoDoc; responses: ResponseData[] }[]
+  docs: CreateSwaggerParams[]
 ) => {
   const yml = `
     ${docs
@@ -42,18 +46,18 @@ export const createSwaggerDocApi = (
         (doc) =>
           `
         ${doc.request.method.toLowerCase()}:
-          summary: ${doc.request.summary}
+          summary: ${doc.request.description}
           tags: [${doc.request.tag}]
           ${
-            !doc.request.requestBody
+            requiredBody(doc.request)
               ? ''
               : `
           requestBody:
             required: true
             content:
-              ${doc.request.content}:
+              ${doc.request.contentType}:
                 schema:
-                  $ref: '#/components/schemas/${doc.request.schema}'
+                  $ref: '#/components/schemas/${doc.requestSchemaName}'
           `
           }
           responses:
@@ -77,4 +81,13 @@ export const createSwaggerDocApi = (
     ${path}:
       ${yml}
     `;
+};
+
+export const requiredBody = (req: RequestFile): boolean => {
+  return Boolean(
+    !req.body ||
+      !Object.keys(req.body).length ||
+      req.method.toUpperCase() === 'GET' ||
+      req.method.toUpperCase() === 'DELETE'
+  );
 };
