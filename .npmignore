@@ -1,7 +1,34 @@
 src
+dist/.gitkeep
 dist-cjs
+dist-cjs/.gitkeep
 .editorconfig
 .gitignore
 .package-lock.json
+.gitkeep
 README.md
 tsconfig.json
+
+# astro front
+src/ui/dist/
+src/ui/.astro/
+src/ui/node_modules/
+
+# logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+src/ui/npm-debug.log*
+src/ui/yarn-debug.log*
+src/ui/yarn-error.log*
+src/ui/pnpm-debug.log*
+
+
+# environment variables
+.env*
+.DS_Store
+.idea/
+src/ui/.env*
+src/ui/.DS_Store
+src/ui/.idea/
