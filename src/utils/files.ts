@@ -71,7 +71,7 @@ export function listAllFiles(
  */
 export function getSchemasFromFolders(folder: string): FolderSchema {
   const { files, folders } = listAllFiles(folder, { recursive: true });
-  const serviceName = folder.split('').pop()?.replaceAll('-', '_');
+  const serviceName = folder.split('/').pop()?.replaceAll('-', '_');
   const reqSchemaName = `${crypto.randomUUID()}_REQUEST`.toUpperCase();
 
   const responseSchemas = folders.map((folder, index) => {
