@@ -40,47 +40,41 @@ export const createSwaggerDocApi = (
   path: string,
   docs: CreateSwaggerParams[]
 ) => {
-  const yml = `
-    ${docs
-      .map(
-        (doc) =>
-          `
-        ${doc.request.method.toLowerCase()}:
-          summary: ${doc.request.description}
-          tags: [${doc.request.tag}]
-          ${
-            requiredBody(doc.request)
-              ? ''
-              : `
-          requestBody:
-            required: true
-            content:
-              ${doc.request.contentType}:
-                schema:
-                  $ref: '#/components/schemas/${doc.requestSchemaName}'
-          `
-          }
-          responses:
-            ${doc.responses
-              .map(
-                (response) => `
-                '${response.status}':
-                    description: ${httpStatusTextByCode(response.status)}
-                    content:
-                      ${response.content}:
-                        schema:
-                          $ref: '#/components/schemas/${response.schema}'
-              `
-              )
-              .join('')}
+  const yml = docs.map(
+    (doc) => `
+      ${doc.request.method.toLowerCase()}:
+        summary: ${doc.request.description}
+        tags: [${doc.request.tag}]
+        ${getParameters(doc.request) ? 'parameters:' : ''}
+        ${getParameters(doc.request)}
+        ${
+          !requiredBody(doc.request)
+            ? ''
+            : `
+        requestBody:
+          required: true
+          content:
+            ${doc.request.contentType}:
+              schema:
+                $ref: '#/components/schemas/${doc.requestSchemaName}'
+        `
+        }
+        responses:${doc.responses
+          .map(
+            (response) => `
+          '${response.status}':
+              description: ${httpStatusTextByCode(response.status)}
+              content:
+                ${response.content}:
+                  schema:
+                    $ref: '#/components/schemas/${response.schema}'
       `
-      )
-      .join('')}
-  `;
+          )
+          .join('')}`
+  );
   return `
     ${path}:
-      ${yml}
-    `;
+      ${yml}`;
 };
 
 export const requiredBody = (req: RequestFile): boolean => {
@@ -90,4 +84,30 @@ export const requiredBody = (req: RequestFile): boolean => {
   }
 
   return !req.body || !Object.keys(req.body).length;
+};
+
+export const setParameters = (
+  params: { [key: string]: any },
+  type: string
+): string => {
+  if (!params || !Object.values(params).length) return '';
+
+  return Object.entries(params)
+    .map(
+      ([key, value]) => `
+        - in: ${type}
+          name: ${key}
+          schema:
+            type: ${typeof value}
+  `
+    )
+    .join('');
+};
+
+export const getParameters = (req: RequestFile) => {
+  const headers = setParameters(req.headers, 'header');
+  const params = setParameters(req.params, 'path');
+  const queries = setParameters(req.queries, 'query');
+
+  return headers + params + queries;
 };
