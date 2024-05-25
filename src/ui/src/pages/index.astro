@@ -2,8 +2,8 @@
 import BaseLayout from '@/layouts/BaseLayout.astro';
 import CardProject from '@/components/CardProject.astro';
 
-const res = await import('../../public/docs/json/open-api.json');
-const projects = res.default;
+const res = await fetch(`${Astro.site}/docs/json/open-api.json`);
+const projects = await res.json();
 ---
 
 <BaseLayout>

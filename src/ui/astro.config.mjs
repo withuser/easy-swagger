@@ -5,8 +5,7 @@ import tailwind from '@astrojs/tailwind';
 
 // https://astro.build/config
 export default defineConfig({
-  // TODO:
-  site: 'https://example.com',
+  site: process.env.UI_BASE_URL ?? 'http://localhost:4321',
   integrations: [
     react(),
     tailwind({ configFile: './src/ui/tailwind.config.mjs' }),
