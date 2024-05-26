@@ -63,11 +63,12 @@ export const createSwaggerDocApi = (
           .map(
             (response) => `
           '${response.status}':
-              description: ${httpStatusTextByCode(response.status)}
-              content:
-                ${response.content}:
-                  schema:
-                    $ref: '#/components/schemas/${response.schema}'
+            description: ${httpStatusTextByCode(response.status)}
+            ${setHeaders(response.headers)}
+            content:
+              ${response.content}:
+                schema:
+                  $ref: '#/components/schemas/${response.schema}'
       `
           )
           .join('')}`
@@ -86,11 +87,26 @@ export const requiredBody = (req: RequestFile): boolean => {
   return !req.body || !Object.keys(req.body).length;
 };
 
+export const setHeaders = (headers: { [key: string]: any }) => {
+  if (!headers || !Object.keys(headers).length) return '';
+
+  const strHeaders = Object.entries(headers).map(
+    ([key, value]) => `
+              ${key}:
+                schema:
+                  type: ${typeof value}`
+  );
+
+  return `headers:
+    ${strHeaders.join('')}
+  `;
+};
+
 export const setParameters = (
   params: { [key: string]: any },
   type: string
 ): string => {
-  if (!params || !Object.values(params).length) return '';
+  if (!params || !Object.keys(params).length) return '';
 
   return Object.entries(params)
     .map(

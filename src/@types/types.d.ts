@@ -16,13 +16,14 @@ export interface APIInfo {
 
 export interface ResponseData {
   content: string;
-  status: number;
+  headers: { [key: string]: any };
   schema: string;
+  status: number;
 }
 
 export interface RequestSchema {
-  name: string;
   body: { [key: string]: any };
+  name: string;
   response: ResponseData;
 }
 
@@ -50,6 +51,12 @@ export interface RequestFile {
   method: string;
   path: string;
   tag: string;
+}
+
+export interface ResponseFile {
+  body: { [key: string]: any };
+  contentType: string;
+  headers: { [key: string]: any };
 }
 
 export interface CreateSwaggerParams {

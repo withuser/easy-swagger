@@ -1,6 +1,6 @@
 import fs, { promises } from 'node:fs';
 import path from 'node:path';
-import { FolderSchema, ListFolderOptions, RequestFile } from '../@types/types';
+import { FolderSchema, ListFolderOptions, RequestFile, ResponseFile } from '../@types/types';
 import { fileURLToPath } from 'node:url';
 
 /**
@@ -76,15 +76,17 @@ export function getSchemasFromFolders(folder: string): FolderSchema {
 
   const responseSchemas = folders.map((folder, index) => {
     const status = folder.split('/').pop() || '200';
-    const schemaName = `${serviceName}_${status}`.toUpperCase();
+    const resSchemaName = `${serviceName}_${status}`.toUpperCase();
+    const res = readJSONFile<ResponseFile>(files[index]);
 
     return {
-      name: schemaName,
-      body: readJSONFile(files[index]),
+      name: resSchemaName,
+      body: res?.body || {},
       response: {
-        content: 'application/json',
+        content: res?.contentType || 'application/json',
+        headers: res?.headers || {},
+        schema: resSchemaName,
         status: parseInt(status),
-        schema: schemaName,
       },
     };
   });
